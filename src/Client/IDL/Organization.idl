@@ -87,10 +87,15 @@ module Organization {
     // Main Service Interface for the Company
     // -------------------------------------------
     interface Company {
-	    TimePoint    getTimeStamp();
-        EmployeeSeq  getEmployees();
-        Employee     getEmployee(in long personId) raises (EmployeeNotFound); // Function may raise this Exception
+	    readonly attribute string nameCompany;
+	    TimePoint                 getTimeStamp();
+        EmployeeSeq               getEmployees();
+		EmployeeSeq               getActiveEmployees();
+        Employee                  getEmployee(in long personId) raises (EmployeeNotFound); // Function may raise this Exception
 		
-		EmployeeData getEmployeeData(in long personId) raises (EmployeeNotFound); // Function may raise this Exception
+		double                    getSumSalary();
+		
+		// method for direct transfer
+		EmployeeData              getEmployeeData(in long personId) raises (EmployeeNotFound); // Function may raise this Exception
     };
 };

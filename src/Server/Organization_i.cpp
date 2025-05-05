@@ -31,6 +31,8 @@
 #include <vector>
 #include <memory> // Für unique_ptr etc.
 #include <thread>
+#include <ranges>
+#include <numeric>
 #include <print>
 
 #include <tao/ORB_Core.h>      // für TAO_ORB_Core_instance()
@@ -49,26 +51,36 @@ Company_i::Company_i(PortableServer::POA_ptr company_poa, PortableServer::POA_pt
 
 void Company_i::initializeDatabase() {
    CORBA::Long emp_no = 99;
-   employee_database_[emp_no] = { ++emp_no, "Max",      "Muster",  Organization::MALE,   55'000.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Petra",    "Power",   Organization::FEMALE, 62'000.00, {2019,  3, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Klaus",    "Klein",   Organization::MALE,   48'000.00, {2022, 11, 1}, false  };
-   employee_database_[emp_no] = { ++emp_no, "Johannes", "Gerlach", Organization::MALE,   63'230.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Matthias", "Fehse",   Organization::MALE,   65'500.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Gabriele", "Sommer",  Organization::FEMALE, 70'320.50, {2017, 11, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Sandra",   "Mayer",   Organization::FEMALE, 55'100.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Vanessa",  "Schmitt", Organization::FEMALE, 45'500.25, {2020,  5, 1}, false };
-   employee_database_[emp_no] = { ++emp_no, "Christel", "Rau",     Organization::FEMALE, 52'300.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Torsten",  "Gutmann", Organization::MALE,   73'500.00, {2016, 12, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Stefanie", "Berger",  Organization::FEMALE, 63'352.25, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Hans",     "Mayer",   Organization::MALE,   66'360.10, {2020,  5, 1}, false };
-   employee_database_[emp_no] = { ++emp_no, "Reinhard", "Schmidt", Organization::MALE,   61'200.00, {2019, 10, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Petra",    "Winther", Organization::FEMALE, 72'650.00, {2017,  4, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Julia",    "Schmidt", Organization::FEMALE, 68'250.00, {2020,  5, 1}, true  };
-   employee_database_[emp_no] = { ++emp_no, "Mark",     "Krämer",  Organization::MALE,   46'700.20, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Max",        "Muster",   Organization::MALE,   55'000.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Petra",      "Power",    Organization::FEMALE, 62'000.00, {2019,  3, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Klaus",      "Klein",    Organization::MALE,   48'000.00, {2022, 11, 1}, false  };
+   employee_database_[emp_no] = { ++emp_no, "Johannes",   "Gerlach",  Organization::MALE,   63'230.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Matthias",   "Fehse",    Organization::MALE,   65'500.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Gabriele",   "Sommer",   Organization::FEMALE, 70'320.50, {2017, 11, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Sandra",     "Mayer",    Organization::FEMALE, 55'100.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Vanessa",    "Schmitt",  Organization::FEMALE, 45'500.25, {2020,  5, 1}, false };
+   employee_database_[emp_no] = { ++emp_no, "Christel",   "Rau",      Organization::FEMALE, 52'300.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Torsten",    "Gutmann",  Organization::MALE,   73'500.00, {2016, 12, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Stefanie",   "Berger",   Organization::FEMALE, 63'352.25, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Sarah",      "Mayer",    Organization::FEMALE, 53'250.00, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Harry",      "Deutsch",  Organization::MALE,   61'720.50, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Katharina",  "Keller",   Organization::FEMALE, 71'500.00, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Sophie",     "Hoffmann", Organization::FEMALE, 51'650.25, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Anna",       "Schmidt",  Organization::FEMALE, 63'751.10, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Lea",        "Peters",   Organization::FEMALE, 67'200.00, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Julian",     "Ziegler",  Organization::MALE,   69'756.20, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Finn",       "Noris",    Organization::MALE,   65'100.75, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Maximilian", "Lang",     Organization::MALE,   67'111.20, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Tim - Leon", "Ziegler",  Organization::MALE,   64'900.60, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Julian",     "Gerlach",  Organization::MALE,   54'222.00, {2020,  5, 1}, true };
+   employee_database_[emp_no] = { ++emp_no, "Hans",       "Mayer",   Organization::MALE,   66'360.10, {2020,  5, 1}, false };
+   employee_database_[emp_no] = { ++emp_no, "Reinhard",   "Schmidt", Organization::MALE,   61'200.00, {2019, 10, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Petra",      "Winther", Organization::FEMALE, 72'650.00, {2017,  4, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Julia",      "Schmidt", Organization::FEMALE, 68'250.00, {2020,  5, 1}, true  };
+   employee_database_[emp_no] = { ++emp_no, "Mark",       "Krämer",  Organization::MALE,   46'700.20, {2020,  5, 1}, true  };
 
-
-   std::cout << "[Servant Company] Database initialized with " << employee_database_.size() << " employees." << std::endl;
-}
+   std::println(std::cout, "[Servant Company {}] Database initialized with {} employees.", ::getTimeStamp(), employee_database_.size());
+   }
 
 Organization::TimePoint Company_i::getTimeStamp(void) {
    auto now = std::chrono::system_clock::now();
@@ -77,69 +89,47 @@ Organization::TimePoint Company_i::getTimeStamp(void) {
    return tp;
    }
 
-// --- Implementierung von getEmployees ---
+char* Company_i::nameCompany() {
+   return CORBA::string_dup("Pfefferminzia AG");
+   }
+
 Organization::EmployeeSeq* Company_i::getEmployees() {
-   std::cout << "[Servant Company] getEmployees() called by client." << std::endl;
+   std::println(std::cout, "[Servant Company {}] getEmployees() called by client.", ::getTimeStamp());
+ 
+   auto all_employees_view = employee_database_ | std::views::values;
+   return buildEmployeeSequenceFromRange(all_employees_view);
+   }
 
-   // Erzeuge die Sequenz für die Rückgabe (Ownership geht an Client)
-   //auto employees_seq = std::make_unique<Organization::EmployeeSeq>();
-   Organization::EmployeeSeq_var employees_seq = new Organization::EmployeeSeq;
-   
-   CORBA::ULong current_index = 0;
-   for (const auto& [id, data] : employee_database_) { // C++17 structured binding
-      try {
-         // 1. Erzeuge einen *neuen* Employee Servant für jeden Eintrag
-        //    Wichtig: Aktiviere mit dem *transienten* POA!
-         Employee_i* employee_servant = new Employee_i(data, employee_poa_.in());
+Organization::EmployeeSeq* Company_i::getActiveEmployees() {
+   std::println(std::cout, "[Servant Company {}] getActiveEmployees() called by client.", ::getTimeStamp());
+   auto active_employees = employee_database_ | std::views::values
+                             | std::views::filter([](EmployeeData const& e) { return e.isActive; });
+   return buildEmployeeSequenceFromRange(active_employees);
+   }
 
-         // 2. *** HIER AKTIVIEREN WIR DEN SERVANT BEIM employee_poa_ ***
-         PortableServer::ObjectId_var oid = employee_poa_->activate_object(employee_servant);
+double Company_i::getSumSalary()  {
+   std::println(std::cout, "[Servant Company {}] getSumSalary() called by client.", ::getTimeStamp());
+   auto active_salaries = employee_database_ | std::views::values
+                            | std::views::filter([](EmployeeData const& e) { return e.isActive; })
+                            | std::views::transform([](EmployeeData const& e) { return e.salary; });
 
-         // 3. Erhalte die Referenz vom employee_poa_ (jetzt, nachdem der Servant aktiv ist)
-         //    Der employee_poa_ verwaltet nun die Lebensdauer des Servants (bei transienten POAs).
-         CORBA::Object_var obj_ref = employee_poa_->id_to_reference(oid.in());
-         //Organization::Employee_ptr employee_ref = Organization::Employee::_narrow(obj_ref.in());
-         Organization::Employee_var employee_ref = Organization::Employee::_narrow(obj_ref.in());
-
-         if (CORBA::is_nil(employee_ref)) {
-            std::cerr << "[Servant Company] CORBA Fehler beim Narrown der Employee-Referenz für ID " << employee_servant->personId() << std::endl;
-            // Hier ggf. Fehlerbehandlung
-            continue; // Oder break, je nach gewünschtem Verhalten
-            }
-         employee_servant->set_oid(oid);
-         employees_seq->length(current_index + 1);
-         (*employees_seq)[current_index++] = employee_ref._retn();
-         }
-      catch (const CORBA::Exception& ex) {
-         std::cerr << "[Servant Company] CORBA Exception creating employee ref for ID "
-            << id << ": " << ex << std::endl;
-         // Im Fehlerfall wird dieser Eintrag übersprungen
-         }
-      catch (const std::exception& stdex) {
-         std::cerr << "[Servant Company] C++ Exception creating employee ref for ID "
-            << id << ": " << stdex.what() << std::endl;
-         }
-      }
-
-   std::cout << "[Servant Company] Returning " << employees_seq->length() << " employee references." << std::endl;
-   // Gib den Besitz des unique_ptr an den Aufrufer (Stub) weiter
-   //return employees_seq.release();
-   return employees_seq._retn();
+   return std::accumulate(active_salaries.begin(), active_salaries.end(), 0.0);
 }
 
 
 // --- Implementierung von getEmployee ---
 Organization::Employee* Company_i::getEmployee(CORBA::Long personId) {
-   std::cout << "[Servant Company] getEmployee(" << personId << ") called by client." << std::endl;
+   std::println(std::cout, "[Servant Company {}] getEmployee({}) called by client.", personId, ::getTimeStamp());
 
    // 1. Suche in der "Datenbank"
    auto it = employee_database_.find(personId);
 
    if (it == employee_database_.end()) {
       // 2. NICHT GEFUNDEN: Wirf die benutzerdefinierte Exception
-      std::cout << "[Servant Company] Employee ID " << personId << " not found. Throwing EmployeeNotFound." << std::endl;
+      std::println(std::cout, "[Servant Company {}] Employee ID {} not found. Throwing EmployeeNotFound.", ::getTimeStamp(), personId);
       Organization::EmployeeNotFound ex;
       ex.requestedId = personId; // Setze das Feld der Exception
+      ex.requestedAt = getTimeStamp();
       throw ex;
    }
 
@@ -171,28 +161,29 @@ Organization::Employee* Company_i::getEmployee(CORBA::Long personId) {
       // Gib Besitz der Referenz an Aufrufer (Stub) weiter
       return employee_ref._retn();
       }
-   catch (const CORBA::Exception& ex) {
-      std::cerr << "[Servant Company] CORBA Exception creating dynamic employee ref for ID "
-         << personId << ": " << ex << std::endl;
+   catch (CORBA::Exception const& ex) {
+      std::println(std::cerr, "[Servant Company {}] CORBA Exception creating dynamic employee ref for ID {}: {}", 
+                   ::getTimeStamp(), personId, toString(ex));
       throw CORBA::INTERNAL(); // Unerwarteter Fehler
       }
-   catch (const std::exception& stdex) {
-      std::cerr << "[Servant Company] C++ Exception creating dynamic employee ref for ID "
-         << personId << ": " << stdex.what() << std::endl;
+   catch (std::exception const& stdex) {
+      std::println(std::cerr, "[Servant Company {}] C++ Exception creating dynamic employee ref for ID {}: {}",
+                    ::getTimeStamp(), personId, stdex.what());
       throw CORBA::INTERNAL(); // Unerwarteter Fehler
       }
    } 
 
 // Implementierung der Methode getEmployeeData
 Organization::EmployeeData* Company_i::getEmployeeData(CORBA::Long personId) {
-   std::cout << "[Servant Company] getEmployeeData(" << personId << ") called by client." << std::endl;
+   std::println(std::cout, "[Servant Company {}] getEmployeeData({}) called by client.",
+                    ::getTimeStamp(), personId);
 
    // 1. Suche in der "Datenbank" nach der Mitarbeiter-ID
    auto it = employee_database_.find(personId);
 
    if (it == employee_database_.end()) {
       // 2. Wenn Mitarbeiter nicht gefunden, werfe die benutzerdefinierte Exception
-      std::cout << "[Servant Company] Employee ID " << personId << " not found. Throwing EmployeeNotFound." << std::endl;
+      std::println(std::cout, "[Servant Company {}] Employee ID {} not found. Throwing EmployeeNotFound.", ::getTimeStamp(), personId);
 
       // Werfe die Exception und setze die angeforderte ID
       Organization::EmployeeNotFound ex;
@@ -214,7 +205,7 @@ Organization::EmployeeData* Company_i::getEmployeeData(CORBA::Long personId) {
    employee_data->startDate = data.startDate;
    employee_data->isActive  = data.isActive;
 
-   std::cout << "[Servant Company] Returning EmployeeData for ID " << personId << std::endl;
+   std::println(std::cout, "[Servant Company {}] Returning EmployeeData for ID {}", ::getTimeStamp(), personId);
 
    // Rückgabe des EmployeeData
    return employee_data;

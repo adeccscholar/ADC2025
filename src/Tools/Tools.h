@@ -45,7 +45,7 @@ inline std::chrono::system_clock::time_point from_timepoint(Organization::TimePo
    
 inline std::chrono::year_month_day convertToChrono(Organization::YearMonthDay const& ymd) {
    return std::chrono::year_month_day{ std::chrono::year { ymd.year },
-                                       std::chrono::month { ymd.month },
-                                       std::chrono::day { ymd.day } };
+                                       std::chrono::month { static_cast<unsigned int>(ymd.month) },
+                                       std::chrono::day { static_cast<unsigned int>(ymd.day) } };
    }
    

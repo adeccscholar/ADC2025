@@ -147,6 +147,9 @@ int main(int argc, char *argv[]) {
       if (CORBA::is_nil(company_var.in())) throw std::runtime_error("Failed to narrow Company reference.");
       std::println(std::cout, "[Client] Successfully obtained reference to Company object.");
 
+      // Firmenname und Gehaltsummer bestimmen
+      std::println(std::cout, "Firma: {}, zu zahlende Gehälter: {:.2f}", company_var->nameCompany(), company_var->getSumSalary());
+
       // Direkter Transfer, Daten werden direkt übertragen und dann nur lokal gespeichert
       empData.reset(company_var->getEmployeeData(110));
 
