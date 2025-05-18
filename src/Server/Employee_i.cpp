@@ -28,36 +28,67 @@
 #include <tao/ORB_Core.h>      // für TAO_ORB_Core_instance()
 #include <tao/PortableServer/PortableServer.h>
 
+
+ // --- Implementierung der Person_i Klasse ---
+
+Person_i::Person_i(PersonData const& data, PortableServer::POA_ptr poa) : 
+                data_(data), poa_(PortableServer::POA::_duplicate(poa)) {
+   std::println(std::cerr, "[Person_i {}] Objekt erzeugt für ID: {}", ::getTimeStamp(), personId());
+}
+
+Person_i::~Person_i() {
+   std::println(std::cerr, "[Person_i {}] Objekt zerstört für ID: {}", ::getTimeStamp(), personId());
+}
+
+CORBA::Long Person_i::personId() {
+   return data_.personId;
+}
+
+char* Person_i::firstName() {
+   return CORBA::string_dup(data_.firstName.c_str());
+}
+
+char* Person_i::name() {
+   return CORBA::string_dup(data_.name.c_str());
+}
+
+Organization::EGender Person_i::gender() {
+   return data_.gender;
+}
+
+char* Person_i::getFullName() {
+   std::string fullName = data_.firstName + " " + data_.name;
+   return CORBA::string_dup(fullName.c_str());
+}
+
+void Person_i::destroy() {
+   std::println(std::cout, "[Person_i {}] destroy() called for ID {}", ::getTimeStamp(), personId());
+
+   try {
+      poa_->deactivate_object(oid_);  // Objekt deregistrieren
+   }
+   catch (CORBA::Exception const& ex) {
+      std::println(std::cerr, "[Employee_i {}] Exception during deactivate_object: {}", ::getTimeStamp(), toString(ex));
+   }
+
+   _remove_ref();  // Führt zu delete this bei RefCount 0
+}
+
+// Setter für die ObjectId, beim Aktivieren setzen
+void Person_i::set_oid(PortableServer::ObjectId const& oid) {
+   oid_ = oid;
+}
+
 // --- Implementierung der Employee_i Klasse ---
 
-Employee_i::Employee_i(EmployeeData const& data, PortableServer::POA_ptr poa) :
-                            data_(data), poa_(PortableServer::POA::_duplicate(poa)) { 
+Employee_i::Employee_i(EmployeeData const& data, PortableServer::POA_ptr poa) 
+                           : Person_i(static_cast<PersonData const&>(data), poa),
+                            data_(data) { 
    std::println(std::cerr, "[Employee_i {}] Objekt erzeugt für ID: {}", ::getTimeStamp(), personId());
    }
 
 Employee_i::~Employee_i() {
    std::println(std::cerr, "[Employee_i {}] Objekt zerstört für ID: {}", ::getTimeStamp(), personId());
-   }
-
-CORBA::Long Employee_i::personId() {
-   return data_.personId;
-   }
-
-char* Employee_i::firstName() {
-   return CORBA::string_dup(data_.firstName.c_str());
-   }
-
-char* Employee_i::name() {
-   return CORBA::string_dup(data_.name.c_str());
-   }
-
-Organization::EGender Employee_i::gender() {
-   return data_.gender;
-   }
-
-char* Employee_i::getFullName() {
-   std::string fullName = data_.firstName + " " + data_.name;
-   return CORBA::string_dup(fullName.c_str());
    }
 
 CORBA::Double Employee_i::salary() {
@@ -75,18 +106,5 @@ CORBA::Boolean Employee_i::isActive() {
 
 void Employee_i::destroy() {
    std::println(std::cout, "[Employee_i {}] destroy() called for ID {}", ::getTimeStamp(), personId());
-
-   try {
-      poa_->deactivate_object(oid_);  // Objekt deregistrieren
-      }
-   catch (CORBA::Exception const& ex) {
-      std::println(std::cerr, "[Employee_i {}] Exception during deactivate_object: {}", ::getTimeStamp(), toString(ex));
-      }
-
-   _remove_ref();  // Führt zu delete this bei RefCount 0
-   }
-
-// Setter für die ObjectId, beim Aktivieren setzen
-void Employee_i::set_oid(PortableServer::ObjectId const& oid) {
-   oid_ = oid;
+   Person_i::destroy();
    }

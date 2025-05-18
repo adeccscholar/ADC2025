@@ -31,6 +31,15 @@
    #include <windows.h>
 #endif
 
+inline std::string toString(CORBA::String_var const& s) {
+   return std::string { s.in() };  // safe: in() returns const char*, ownership retained
+   }
+
+inline std::string toString(char* s) {
+   std::string result = s ? std::string { s } : std::string {};
+   CORBA::string_free(s);  // important for CORBA::String type return values, the memory would allocated from orb!
+   return result;
+   }
 
 // === Beispiel: getEmployee(personId) ===
 void testReadEmployee(Organization::Company_ptr comp_in, CORBA::Long seekId) {
@@ -93,11 +102,12 @@ void testReadEmployees(Organization::Company_ptr comp_in) {
 
       try {
          CORBA::Long id = current_employee->personId(); // Readonly Attribut
-         CORBA::String_var fullName = current_employee->getFullName();
+         //CORBA::String_var fullName = current_employee->getFullName();
+         auto fullName = toString(current_employee->getFullName());
          CORBA::Double salary = current_employee->salary();
          CORBA::Boolean active = current_employee->isActive();
          std::println(std::cout, "  Employee [{:>3}] - ID: {:>4}, Name: {:<25}, Salary: {:>10.2f}, Status: {} ",
-                                 i, id, fullName.in(), salary, (active ? "aktiv" : "ausgeschieden"));
+                                 i, id, fullName, salary, (active ? "aktiv" : "ausgeschieden"));
 
          }
       catch (CORBA::Exception const& ex) {

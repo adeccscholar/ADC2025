@@ -62,17 +62,16 @@ struct PersonData {
     std::string   firstName      = ""s;
     std::string   name           = ""s;
     Organization::EGender gender = Organization::OTHER; // Default
-    double        salary         = 0.0;
 };
 
 // Struktur zur einfachen Speicherung der Rohdaten eines Angestellten
 // Diese würde normalerweise aus einer Datenbank gelesen werden.
 // Verzicht auf Vererbung, also Daten der Person enthalten
-struct EmployeeData {
-   CORBA::Long   personId               = -1;
-   std::string   firstName              = ""s;
-   std::string   name                   = ""s;
-   Organization::EGender gender         = Organization::OTHER; // Default
+struct EmployeeData : public PersonData {
+  // CORBA::Long   personId               = -1;
+  // std::string   firstName              = ""s;
+  // std::string   name                   = ""s;
+  // Organization::EGender gender         = Organization::OTHER; // Default
    double        salary                 = 0.0;    
    Organization::YearMonthDay startDate = {0, 0, 0};
    CORBA::Boolean isActive              = false;

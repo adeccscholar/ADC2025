@@ -61,8 +61,8 @@ module Organization {
         boolean isActive;
 	   }; 
 
-    // erst einmal ohne Vererbung
-    interface Employee {
+
+    interface Person {
 	    // Read-only attributes for simplicity in this example
         readonly attribute long   personId;
         readonly attribute string firstName;
@@ -71,11 +71,15 @@ module Organization {
 
         string getFullName();
 		
+	    void destroy();
+	   };
+	   
+    // erst einmal ohne Vererbung
+    interface Employee : Person {
         readonly attribute double salary;
         readonly attribute YearMonthDay startDate;
         readonly attribute boolean isActive;
 		
-		void destroy();
     };
 
     // ---------------------------------

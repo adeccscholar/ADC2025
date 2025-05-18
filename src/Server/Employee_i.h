@@ -23,41 +23,54 @@
 #include "OrganizationS.h" // Skeleton Header
 #include "EmployeeData.h"
 
+// --- Servant-Implementierung für das Person-Interface  ---
+// Dieses Objekt ist TRANSIENT. , als erstes der Versuch, ohne Deaktivierung
+class Person_i : public virtual PortableServer::RefCountServantBase,
+   public virtual POA_Organization::Person {
+private:
+   PersonData data_;
+
+   // Referenz auf den POA, der dieses Objekt verwaltet (nur für Debugging/Info)
+   PortableServer::POA_var poa_;
+   PortableServer::ObjectId_var oid_;
+public:
+   Person_i(PersonData const& data, PortableServer::POA_ptr poa);
+   // Wichtig für transiente Objekte: Loggen, wann sie zerstört werden.
+   virtual ~Person_i();
+
+   // --- IDL Attribute Implementierung (readonly) ---
+   virtual CORBA::Long    personId();
+   virtual char* firstName();
+   virtual char* name();
+   virtual Organization::EGender gender();
+
+   // --- IDL Operation Implementierung ---
+   virtual char* getFullName();
+
+   // helper for deactivation Setter für die ObjectId, beim Aktivieren setzen
+   void set_oid(PortableServer::ObjectId const& oid);
+
+   virtual void destroy() override;
+};
+
 // --- Servant-Implementierung für das Employee-Interface (erbt von Person) ---
 // Dieses Objekt ist TRANSIENT.
 class Employee_i : public virtual PortableServer::RefCountServantBase,
+                   public virtual Person_i,
                    public virtual POA_Organization::Employee {
 private:
     EmployeeData data_;
 	
-    // Referenz auf den POA, der dieses Objekt verwaltet (nur für Debugging/Info)
-    PortableServer::POA_var poa_;
-	PortableServer::ObjectId_var oid_;
 public:
     Employee_i(const EmployeeData& data, PortableServer::POA_ptr poa);
-
     // Wichtig für transiente Objekte: Loggen, wann sie zerstört werden.
     virtual ~Employee_i();
 
-    // --- IDL Attribute Implementierung (readonly) ---
-    virtual CORBA::Long    personId();
-    virtual char* firstName();
-    virtual char* name();
-    virtual Organization::EGender gender();
-
-    // --- IDL Operation Implementierung ---
-    virtual char* getFullName();    
-	
-	virtual CORBA::Double salary();
+    virtual CORBA::Double salary();
     virtual Organization::YearMonthDay startDate();
     virtual CORBA::Boolean isActive();
 
-
-    // helper for deactivation Setter für die ObjectId, beim Aktivieren setzen
-    void set_oid(PortableServer::ObjectId const& oid);
-	
     virtual void destroy() override;
-
     // --- Lifecycle Callback (optional, aber nützlich) ---
     // Wird vom POA aufgerufen kurz bevor der Servant gelöscht wird.
     //virtual void _remove_ref ();
